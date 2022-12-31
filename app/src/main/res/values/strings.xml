@@ -1,0 +1,35 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">QRCardId_Java</string>
+    <string name="scan_card_id">Scan Card ID</string>
+    <string name="txt_scan_qr_code">Quét mã QR</string>
+    <string name="txt_history">Lịch sử</string>
+    <string name="txt_important">Quan trọng</string>
+
+    <string name="txt_card_id">Thẻ căn cước công dân</string>
+    <string name="txt_type_wifi">Wifi</string>
+    <string name="txt_url">Liên kết web</string>
+    <string name="txt_sms">Tin nhắn sms</string>
+    <string name="txt_geo_poin">Địa điểm</string>
+    <string name="txt_email">Email</string>
+    <string name="txt_phone">Số điện thoại</string>
+    <string name="txt_contact_info">Thông tin liên hệ</string>
+    <string name="txt_address">Địa chỉ</string>
+    <string name="txt_person_name">User</string>
+    <string name="txt_calendar_event">Lịch sự kiện</string>
+    <string name="txt_calendar_date_time">Lịch</string>
+    <string name="txt_information">Thông tin</string>
+
+    <string name="txt_card_id_number">Số CCCD</string>
+    <string name="txt_card_id_number_old">Số CCCD cũ</string>
+    <string name="txt_full_name">Họ và tên</string>
+    <string name="txt_date_of_birth">Ngày sinh</string>
+    <string name="txt_issued_on">Ngày cấp</string>
+    <string name="txt_nationality">Quốc tịch</string>
+    <string name="txt_expiration_date">Ngày hết hạn</string>
+    <string name="txt_vietnamese">Việt Nam</string>
+    <string name="txt_delete_item_count">(%1$d)</string>
+
+    <string name="txt_double_back_to_exit">Chạm lại để thoát</string>
+    <string name="txt_qr_code_not_found">Không phát hiện QR thẻ căn cước</string>
+    <string name="txt_qr_not_equal_card_id">QR không phải thẻ căn cước</string>
+</resources>

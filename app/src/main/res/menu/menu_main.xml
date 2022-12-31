@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/navigation_qrcode"
+        android:icon="@drawable/ic_qr_scan"
+        android:title="@string/txt_scan_qr_code"/>
+
+    <item android:id="@+id/navigation_history"
+        android:icon="@drawable/ic_history"
+        android:title="@string/txt_history"/>
+
+    <item android:id="@+id/navigation_favorite"
+        android:icon="@drawable/ic_importance"
+        android:title="@string/txt_important"/>
+</menu>

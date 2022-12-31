@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ScanCode</string>
+
+    <string name="txt_permission_denied_message">The app needs permission to work</string>
+    <string name="quickie_scan_qr_code">Scan QR code</string>
+    <string name="quickie_please_wait">Please wait…</string>
+    <string name="txt_cccd_qr">CCCD-QR</string>
+    <string name="txt_move_camera_alert">Di chuyển camera đến mã QR để quét </string>
+    <string name="txt_pick_qr_from_gallery">Chọn ảnh QR từ thư viện</string>
+</resources>
