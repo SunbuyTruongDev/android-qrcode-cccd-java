@@ -177,7 +177,7 @@ public class QRScanFragment extends BaseFragment<FragmentQrScanBinding> {
         if (content != null) {
             if (isCardId(content)) {
                 long size = QRScanDatabase.getInstance().resultDao().getCount();
-                QRCodeResult qrCodeResult = new QRCodeResult(content, type, currentTime, false, size + 1);
+                QRCodeResult qrCodeResult = new QRCodeResult(content, type, currentTime, false );
                 QRScanDatabase.getInstance().resultDao().insert(qrCodeResult);
                 QRScanDatabase.getInstance().resultDao().limitHistory();
                 ShowResultContentActivity.newInstance(requireContext(), qrCodeResult, "CARD_ID");

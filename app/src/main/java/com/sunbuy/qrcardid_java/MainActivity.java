@@ -11,6 +11,7 @@ import android.Manifest;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 
 import com.base.common.base.BaseActivity;
 import com.base.common.extensions.ActivityExtensionsKt;
@@ -29,7 +30,20 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
     @Override
     public void initViews() {
+        requestPermission();
 
+        ViewExtensionsKt.setSingleClickListener(getBinding().btnCancelCameraPermission, view -> {
+            System.exit(0);
+            return  null ;
+        });
+
+        ViewExtensionsKt.setSingleClickListener(getBinding().btnOkCameraPermission, view -> {
+            requestPermission();
+            return null ;
+        });
+    }
+
+    private void requestPermission(){
         List<String> permission = new ArrayList<>() ;
         permission.add(Manifest.permission.CAMERA) ;
 
@@ -37,6 +51,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             @Override
             public void requestSuccess() {
                 ViewExtensionsKt.show(getBinding().clScan);
+                ViewExtensionsKt.hide(getBinding().clAlertPermission);
                 BottomNavigationView navView = getBinding().navMain ;
                 NavController navController = ActivityKt.findNavController(MainActivity.this,R.id.nav_host_main) ;
                 BottomNavigationViewKt.setupWithNavController(navView,navController);
@@ -45,6 +60,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             @Override
             public void requestDenied() {
                 ViewExtensionsKt.hide(getBinding().clScan);
+                ViewExtensionsKt.show(getBinding().clAlertPermission);
             }
         });
     }

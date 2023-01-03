@@ -65,12 +65,11 @@ public class QRCodeResult implements Parcelable {
         this.id = id;
     }
 
-    public QRCodeResult(String content, String type, Long time, boolean favorite, long id) {
+    public QRCodeResult(String content, String type, Long time, boolean favorite) {
         this.content = content;
         this.type = type;
         this.time = time;
         this.favorite = favorite;
-        this.id =id ;
     }
 
     protected QRCodeResult(Parcel in) {

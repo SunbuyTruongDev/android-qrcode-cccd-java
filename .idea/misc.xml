@@ -8,6 +8,12 @@
         <entry key="..\:/AndroidProject/QRCardId_Java/app/src/main/res/layout/activity_show_result_content.xml" value="0.25" />
         <entry key="..\:/AndroidProject/QRCardId_Java/app/src/main/res/layout/fragment_qr_scan.xml" value="0.25" />
         <entry key="..\:/AndroidProject/QRCardId_Java/app/src/main/res/menu/menu_main.xml" value="0.25" />
+        <entry key="..\:/AndroidProject/android-qrcode-cccd-java/app/src/main/res/drawable/bg_require_camera_permission.xml" value="0.167" />
+        <entry key="..\:/AndroidProject/android-qrcode-cccd-java/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/AndroidProject/android-qrcode-cccd-java/app/src/main/res/layout/fragment_history.xml" value="0.25" />
+        <entry key="..\:/AndroidProject/android-qrcode-cccd-java/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.167" />
+        <entry key="..\:/AndroidProject/android-qrcode-cccd-java/common/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.167" />
+        <entry key="..\:/AndroidProject/android-qrcode-cccd-java/scancode/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.167" />
       </map>
     </option>
   </component>

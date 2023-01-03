@@ -32,4 +32,9 @@
     <string name="txt_double_back_to_exit">Chạm lại để thoát</string>
     <string name="txt_qr_code_not_found">Không phát hiện QR thẻ căn cước</string>
     <string name="txt_qr_not_equal_card_id">QR không phải thẻ căn cước</string>
+    <string name="txt_select_all">Chọn tất cả</string>
+    <string name="txt_camera_not_found">Camera không khả dụng</string>
+    <string name="txt_camera_require_permission_alert">Bạn có muốn cấp quyền cho camera không?</string>
+    <string name="txt_cancel_alert">Từ chối</string>
+    <string name="txT_accept_alert">OK</string>
 </resources>

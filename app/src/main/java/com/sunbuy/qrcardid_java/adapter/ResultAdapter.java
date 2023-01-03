@@ -32,7 +32,8 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
     private int type = TYPE_HISTORY ;
     private ArrayList<QRCodeResult> listSelected = new ArrayList<>() ;
     private boolean showDeleteHistory = false ;
-    private Context context ;
+    private final Context context ;
+    private boolean selectAll = false ;
 
     public ResultAdapter(Context context) {
         this.context = context;
@@ -49,7 +50,7 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
 
     public void setData(List<QRCodeResult> list, int type){
         this.type =type ;
-        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new ResultDiffUtil(this.list,list)) ;
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new ResultDiffUtil(this.list, list)) ;
         this.list.clear();
         this.list.addAll(list) ;
         diffResult.dispatchUpdatesTo(this);
@@ -66,6 +67,8 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
         }
         notifyDataSetChanged();
     }
+
+
 
     public void removeFavorite(QRCodeResult item){
         int removeIndex = -1 ;
@@ -92,7 +95,6 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
         }
         QRScanDatabase.getInstance().resultDao().deleteHistories(ids);
         notifyDataSetChanged();
-
     }
 
     @NonNull
@@ -107,18 +109,12 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
         QRCodeResult result = list.get(position) ;
         holder.mBinding.tvType.setText(context.getString(R.string.txt_card_id));
         holder.mBinding.tvTime.setText(formatDate(result.getTime()));
-        if (!showDeleteHistory){
-            holder.mBinding.imgSelect.setImageResource(R.drawable.ic_unselected);
-            holder.mBinding.imgSelect.setTag("unselected");
-        }else {
-            holder.mBinding.imgSelect.setImageResource(R.drawable.ic_selected);
-            holder.mBinding.imgSelect.setTag("selected");
-        }
+        holder.mBinding.imgSelect.setImageResource(R.drawable.ic_unselected);
+        holder.mBinding.imgSelect.setTag("unselected");
 
-        if (showDeleteHistory){
-            holder.mBinding.imgSelect.setVisibility(View.VISIBLE);
-        }else {
-            holder.mBinding.imgSelect.setVisibility(View.GONE);
+        if (selectAll){
+            holder.mBinding.imgSelect.setImageResource(R.drawable.ic_selected) ;
+            holder.mBinding.imgSelect.setTag("selected");
         }
 
         ViewExtensionsKt.setSingleClickListener(holder.mBinding.getRoot(), view -> {
@@ -138,6 +134,16 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
             }
             return null;
         });
+    }
+
+    public void selectAll(){
+        clearSelected();
+        listSelected.addAll(this.list) ;
+        selectAll = true ;
+        if (listener != null){
+            listener.onCountSelected(listSelected);
+        }
+        notifyDataSetChanged();
     }
 
     public void selectItem(ResultViewHolder holder){
@@ -167,10 +173,15 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
         public ResultViewHolder( ItemResultBinding mBinding) {
             super(mBinding.getRoot());
             this.mBinding = mBinding;
+            if (type == TYPE_HISTORY){
+                mBinding.imgImportance.setVisibility(View.GONE);
+            }else {
+                mBinding.imgImportance.setVisibility(View.VISIBLE);
+            }
         }
     }
 
-    class ResultDiffUtil extends DiffUtil.Callback {
+    static class ResultDiffUtil extends DiffUtil.Callback {
         List<QRCodeResult> oldList ;
         List<QRCodeResult> newList ;
 
@@ -191,20 +202,12 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
 
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            if (oldList.get(oldItemPosition).getId() == newList.get(newItemPosition).getId()){
-                return true ;
-            }else {
-                return false ;
-            }
+            return oldList.get(oldItemPosition).getId() == newList.get(newItemPosition).getId();
         }
 
         @Override
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-           if (oldList.get(oldItemPosition).getId() != newList.get(newItemPosition).getId()){
-               return false;
-           }else {
-               return true;
-           }
+            return oldList.get(oldItemPosition).getId() == newList.get(newItemPosition).getId();
         }
 
         @Nullable

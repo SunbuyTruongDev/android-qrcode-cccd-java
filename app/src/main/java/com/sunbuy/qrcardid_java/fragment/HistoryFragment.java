@@ -79,7 +79,7 @@ public class HistoryFragment extends BaseFragment<FragmentHistoryBinding> {
         });
 
         ViewExtensionsKt.setSingleClickListener(getBinding().clDelete, view -> {
-            if (ViewKt.isInvisible(getBinding().tvItemCount)){
+            if (ViewKt.isVisible(getBinding().tvItemCount)){
                 if (countSelected <= 0){
                     return null;
                 }
@@ -87,9 +87,11 @@ public class HistoryFragment extends BaseFragment<FragmentHistoryBinding> {
                 getBinding().tvItemCount.setVisibility(View.GONE);
                 adapterResult.clearSelected();
                 adapterResult.setShowDeleteHistory(false);
+                getBinding().tvSelectAll.setVisibility(View.GONE);
             }else {
                 getBinding().tvItemCount.setVisibility(View.VISIBLE);
                 adapterResult.setShowDeleteHistory(true);
+                getBinding().tvSelectAll.setVisibility(View.VISIBLE);
             }
 
             if (getBinding().imgBack.getVisibility() == View.VISIBLE){
@@ -114,7 +116,13 @@ public class HistoryFragment extends BaseFragment<FragmentHistoryBinding> {
             getBinding().imgBack.setVisibility(View.VISIBLE);
             adapterResult.setShowDeleteHistory(false);
             getBinding().tvItemCount.setText(getString(R.string.txt_delete_item_count,0));
+            getBinding().tvSelectAll.setVisibility(View.GONE);
             return null;
+        });
+
+        ViewExtensionsKt.setSingleClickListener(getBinding().tvSelectAll, view -> {
+            adapterResult.selectAll();
+            return  null ;
         });
     }
 
@@ -125,6 +133,7 @@ public class HistoryFragment extends BaseFragment<FragmentHistoryBinding> {
         getBinding().tvItemCount.setVisibility(View.GONE);
         getBinding().imgClose.setVisibility(View.GONE);
         getBinding().imgBack.setVisibility(View.VISIBLE);
+        getBinding().tvSelectAll.setVisibility(View.GONE);
         super.onFragmentPause();
     }
 
