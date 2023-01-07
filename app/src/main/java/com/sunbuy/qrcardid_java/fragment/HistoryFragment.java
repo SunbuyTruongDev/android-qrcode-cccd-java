@@ -2,21 +2,23 @@ package com.sunbuy.qrcardid_java.fragment;
 
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.InsetDrawable;
+import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewKt;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.base.common.base.BaseFragment;
-import com.base.common.extensions.DimenExtensionKt;
-import com.base.common.extensions.ViewExtensionsKt;
 import com.sunbuy.qrcardid_java.MainActivity;
 import com.sunbuy.qrcardid_java.R;
 import com.sunbuy.qrcardid_java.ShowResultContentActivity;
+import com.sunbuy.qrcardid_java.Utils;
 import com.sunbuy.qrcardid_java.adapter.ResultAdapter;
 import com.sunbuy.qrcardid_java.adapter.ResultAdapterListener;
 import com.sunbuy.qrcardid_java.data.DataBaseCallback;
@@ -31,15 +33,30 @@ import java.util.Objects;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
-public class HistoryFragment extends BaseFragment<FragmentHistoryBinding> {
+public class HistoryFragment extends Fragment {
 
     private ResultAdapter adapterResult ;
     private final List<QRCodeResult> listResult = new ArrayList<>() ;
     private int countSelected = 0 ;
 
+    private FragmentHistoryBinding binding ;
+
+    @Nullable
     @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = FragmentHistoryBinding.inflate(inflater,container,false);
+        return binding.getRoot() ;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        observersData();
+        setUpViews();
+    }
+
+
     public void observersData() {
-        super.observersData();
         adapterResult = new ResultAdapter(requireActivity());
         QRScanDatabase.getInstance().getAllHistory(resultList -> {
             listResult.addAll(resultList) ;
@@ -47,18 +64,17 @@ public class HistoryFragment extends BaseFragment<FragmentHistoryBinding> {
         });
     }
 
-    @Override
     public void setUpViews() {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
         InsetDrawable insetDrawable = new InsetDrawable(new ColorDrawable(ContextCompat.getColor(requireContext(),R.color.colorA8A4A4)),0,0,0,0);
         dividerItemDecoration.setDrawable(insetDrawable) ;
 
-        getBinding().rvContent.setLayoutManager(new LinearLayoutManager(requireContext()));
-        getBinding().rvContent.setAdapter(adapterResult);
-        getBinding().rvContent.setPadding((int)DimenExtensionKt.dipToPix(16f,requireContext()),0,(int)DimenExtensionKt.dipToPix(16f,requireContext()),0);
-        getBinding().rvContent.addItemDecoration(dividerItemDecoration);
+        binding.rvContent.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.rvContent.setAdapter(adapterResult);
+        binding.rvContent.setPadding((int) Utils.dipToPix(16f,requireContext()),0,(int)Utils.dipToPix(16f,requireContext()),0);
+        binding.rvContent.addItemDecoration(dividerItemDecoration);
 
-        getBinding().tvItemCount.setText(getString(R.string.txt_delete_item_count,0));
+        binding.tvItemCount.setText(getString(R.string.txt_delete_item_count,0));
 
         adapterResult.setResultListener(new ResultAdapterListener() {
             @Override
@@ -74,72 +90,64 @@ public class HistoryFragment extends BaseFragment<FragmentHistoryBinding> {
             @Override
             public void onCountSelected(ArrayList<QRCodeResult> list) {
                 countSelected = list.size() ;
-                getBinding().tvItemCount.setText(getString(R.string.txt_delete_item_count,countSelected));
+                binding.tvItemCount.setText(getString(R.string.txt_delete_item_count,countSelected));
             }
         });
 
-        ViewExtensionsKt.setSingleClickListener(getBinding().clDelete, view -> {
-            if (ViewKt.isVisible(getBinding().tvItemCount)){
+        binding.clDelete.setOnClickListener(view -> {
+            if (binding.tvItemCount.getVisibility() == View.VISIBLE){
                 if (countSelected <= 0){
-                    return null;
+                    return;
                 }
                 adapterResult.removeHistory(adapterResult.getListSelected());
-                getBinding().tvItemCount.setVisibility(View.GONE);
+                binding.tvItemCount.setVisibility(View.GONE);
                 adapterResult.clearSelected();
                 adapterResult.setShowDeleteHistory(false);
-                getBinding().tvSelectAll.setVisibility(View.GONE);
+                binding.tvSelectAll.setVisibility(View.GONE);
             }else {
-                getBinding().tvItemCount.setVisibility(View.VISIBLE);
+                binding.tvItemCount.setVisibility(View.VISIBLE);
                 adapterResult.setShowDeleteHistory(true);
-                getBinding().tvSelectAll.setVisibility(View.VISIBLE);
+                binding.tvSelectAll.setVisibility(View.VISIBLE);
             }
 
-            if (getBinding().imgBack.getVisibility() == View.VISIBLE){
-                getBinding().imgBack.setVisibility(View.GONE);
-                getBinding().imgClose.setVisibility(View.VISIBLE);
+            if (binding.imgBack.getVisibility() == View.VISIBLE){
+                binding.imgBack.setVisibility(View.GONE);
+                binding.imgClose.setVisibility(View.VISIBLE);
             }else {
-                getBinding().imgBack.setVisibility(View.VISIBLE);
-                getBinding().imgClose.setVisibility(View.GONE);
+                binding.imgBack.setVisibility(View.VISIBLE);
+                binding.imgClose.setVisibility(View.GONE);
             }
-            return null ;
+
         });
 
-        ViewExtensionsKt.setSingleClickListener(getBinding().imgBack,view ->{
+        binding.imgBack.setOnClickListener(view -> {
             ((MainActivity) requireActivity()).backToScanFragment();
-            return null;
         });
 
-        ViewExtensionsKt.setSingleClickListener(getBinding().imgClose,view ->{
+
+        binding.imgClose.setOnClickListener(view -> {
             adapterResult.clearSelected();
-            getBinding().tvItemCount.setVisibility(View.GONE);
-            getBinding().imgClose.setVisibility(View.GONE);
-            getBinding().imgBack.setVisibility(View.VISIBLE);
+            binding.tvItemCount.setVisibility(View.GONE);
+            binding.imgClose.setVisibility(View.GONE);
+            binding.imgBack.setVisibility(View.VISIBLE);
             adapterResult.setShowDeleteHistory(false);
-            getBinding().tvItemCount.setText(getString(R.string.txt_delete_item_count,0));
-            getBinding().tvSelectAll.setVisibility(View.GONE);
-            return null;
+            binding.tvItemCount.setText(getString(R.string.txt_delete_item_count,0));
+            binding.tvSelectAll.setVisibility(View.GONE);
         });
 
-        ViewExtensionsKt.setSingleClickListener(getBinding().tvSelectAll, view -> {
+        binding.tvSelectAll.setOnClickListener(view -> {
             adapterResult.selectAll();
-            return  null ;
         });
     }
 
     @Override
-    public void onFragmentPause() {
+    public void onPause() {
         adapterResult.clearSelected();
         adapterResult.setShowDeleteHistory(false);
-        getBinding().tvItemCount.setVisibility(View.GONE);
-        getBinding().imgClose.setVisibility(View.GONE);
-        getBinding().imgBack.setVisibility(View.VISIBLE);
-        getBinding().tvSelectAll.setVisibility(View.GONE);
-        super.onFragmentPause();
-    }
-
-
-    @Override
-    public int getLayoutId() {
-        return R.layout.fragment_history;
+        binding.tvItemCount.setVisibility(View.GONE);
+        binding.imgClose.setVisibility(View.GONE);
+        binding.imgBack.setVisibility(View.VISIBLE);
+        binding.tvSelectAll.setVisibility(View.GONE);
+        super.onPause();
     }
 }

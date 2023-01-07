@@ -5,14 +5,17 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Size;
 import android.view.HapticFeedbackConstants;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
@@ -20,32 +23,28 @@ import androidx.camera.core.Preview;
 import androidx.camera.core.TorchState;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.Observer;
+import androidx.fragment.app.Fragment;
 
-import com.base.common.base.BaseFragment;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
+import com.sunbuy.qrcardid_java.MlKitErrorHandler;
 import com.sunbuy.qrcardid_java.R;
 import com.sunbuy.qrcardid_java.ShowResultContentActivity;
 import com.sunbuy.qrcardid_java.data.QRScanDatabase;
 import com.sunbuy.qrcardid_java.data.entities.QRCodeResult;
 import com.sunbuy.qrcardid_java.databinding.FragmentQrScanBinding;
-import com.sunbuy.scancode.MlKitErrorHandler;
-import com.sunbuy.scancode.QRCodeAnalyzer;
-import com.sunbuy.scancode.QRCodeImageGallery;
+import com.sunbuy.qrcardid_java.scan.QRCodeAnalyzer;
+import com.sunbuy.qrcardid_java.scan.QRCodeAnalyzerCallback;
+import com.sunbuy.qrcardid_java.scan.QROverlayViewCallback;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
-
-public class QRScanFragment extends BaseFragment<FragmentQrScanBinding> {
+public class QRScanFragment extends Fragment {
 
     private ExecutorService analysisExecutor;
     private int[] barcodeFormats = new int[]{Barcode.FORMAT_QR_CODE};
@@ -53,54 +52,75 @@ public class QRScanFragment extends BaseFragment<FragmentQrScanBinding> {
     private boolean onPipSound = true;
     private boolean onOpenFlash = false;
     private CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+    private FragmentQrScanBinding binding;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = FragmentQrScanBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setUpViews();
+    }
+
     public void setUpViews() {
         applyScannerConfig();
         analysisExecutor = Executors.newSingleThreadExecutor();
 
-        getBinding().overlayView.flipCamera(() -> {
-            if (cameraSelector == CameraSelector.DEFAULT_FRONT_CAMERA) {
-                cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
-            } else {
-                cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA;
+        binding.overlayView.setOpenSoundPip(new QROverlayViewCallback() {
+            @Override
+            public void onPipSound() {
+                onPipSound = !onPipSound;
+                binding.overlayView.setSoundPipState(onPipSound);
             }
-            startCamera();
-
-            return null;
+        });
+        binding.overlayView.importFromGallery(new QROverlayViewCallback() {
+            @Override
+            public void pickImage() {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                pickImageResult.launch(intent);
+            }
         });
 
-        getBinding().overlayView.setOpenSoundPip(() -> {
-            onPipSound = !onPipSound;
-            getBinding().overlayView.setSoundPipState(onPipSound);
-            return null;
-        });
-
-        getBinding().overlayView.importFromGallery(() -> {
-            Intent intent = new Intent();
-            intent.setType("image/*");
-            intent.setAction(Intent.ACTION_GET_CONTENT);
-            pickImageResult.launch(intent);
-            return null;
-        });
         startCamera();
     }
 
-    private ActivityResultLauncher<Intent> pickImageResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+    private final ActivityResultLauncher<Intent> pickImageResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == Activity.RESULT_OK) {
-            Uri data = result.getData().getData();
+            Uri data = Objects.requireNonNull(result.getData()).getData();
             try {
                 InputImage inputImage = InputImage.fromFilePath(requireContext(), data);
-                new QRCodeImageGallery(barcodeFormats, (barcode) -> {
-                    onSuccess(barcode);
-                    return null;
-                }, () -> {
-                    Snackbar.make(getBinding().getRoot(), getString(R.string.txt_qr_code_not_found), Snackbar.LENGTH_SHORT).show();
-                    return null;
-                }, (exception) -> {
-                    onFailure(exception);
-                    return null ;
-                }).onProcess(inputImage);
+
+                com.sunbuy.qrcardid_java.scan.QRCodeImageGallery qrCodeImageGallery = new com.sunbuy.qrcardid_java.scan.QRCodeImageGallery(barcodeFormats);
+                qrCodeImageGallery.setQRCodeAnalyzerCallback(new QRCodeAnalyzerCallback() {
+                    @Override
+                    public void onSuccess(Barcode barcode) {
+                        QRScanFragment.this.onSuccess(barcode);
+                    }
+
+                    @Override
+                    public void onFailure(Exception exception) {
+                        QRScanFragment.this.onFailure(exception);
+                    }
+
+                    @Override
+                    public void onPassCompleted(boolean complete) {
+
+                    }
+
+                    @Override
+                    public void notFound() {
+                        Snackbar.make(binding.getRoot(), getString(R.string.txt_qr_code_not_found), Snackbar.LENGTH_SHORT).show();
+                    }
+                });
+
+                qrCodeImageGallery.onProcess(inputImage);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -108,47 +128,66 @@ public class QRScanFragment extends BaseFragment<FragmentQrScanBinding> {
     });
 
     public void startCamera() {
-        getBinding().overlayView.setScanAnimationHide();
+        binding.overlayView.setScanAnimationHide();
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext());
         cameraProviderFuture.addListener(() -> {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 Preview preview = new Preview.Builder().build();
-                preview.setSurfaceProvider(getBinding().previewView.getSurfaceProvider());
+                preview.setSurfaceProvider(binding.previewView.getSurfaceProvider());
                 ImageAnalysis imageAnalysis = new ImageAnalysis.Builder().setTargetResolution(new Size(1280, 720)).build();
-                imageAnalysis.setAnalyzer(analysisExecutor, new QRCodeAnalyzer(barcodeFormats, (barcode) -> {
-                    imageAnalysis.clearAnalyzer();
-                    onSuccess(barcode);
-                    return null;
-                }, (exception) -> {
-                    onFailure(exception);
-                    return null;
-                }, (failureOccurred) -> {
-                    onPassCompleted();
-                    return null;
-                }));
+
+                QRCodeAnalyzer qrCodeAnalyzer = new QRCodeAnalyzer(barcodeFormats);
+                qrCodeAnalyzer.setQRCodeAnalyzerCallback(new QRCodeAnalyzerCallback() {
+                    @Override
+                    public void onSuccess(Barcode barcode) {
+                        imageAnalysis.clearAnalyzer();
+                        QRScanFragment.this.onSuccess(barcode);
+                    }
+
+                    @Override
+                    public void onFailure(Exception exception) {
+                        QRScanFragment.this.onFailure(exception);
+                    }
+
+                    @Override
+                    public void onPassCompleted(boolean complete) {
+                        QRScanFragment.this.onPassCompleted();
+                    }
+
+                    @Override
+                    public void notFound() {
+
+                    }
+                });
+
+                imageAnalysis.setAnalyzer(analysisExecutor, qrCodeAnalyzer);
 
                 cameraProvider.unbindAll();
-                Camera camera =cameraProvider.bindToLifecycle(this,cameraSelector,preview,imageAnalysis) ;
-                getBinding().overlayView.setVisibility(View.VISIBLE);
-                getBinding().overlayView.setScanAnimationShow();
+                Camera camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis);
+                binding.overlayView.setVisibility(View.VISIBLE);
+                binding.overlayView.setScanAnimationShow();
                 camera.getCameraInfo().getTorchState().observe(requireActivity(), torchState -> {
-                    getBinding().overlayView.setOpenFlash(()->{
-                        if (torchState == TorchState.ON){
-                            camera.getCameraControl().enableTorch(false) ;
-                            onOpenFlash = false;
-                            getBinding().overlayView.setFlashState(false);
-                        }else {
-                            camera.getCameraControl().enableTorch(true) ;
-                            onOpenFlash = true ;
-                            getBinding().overlayView.setFlashState(true) ;
+
+                    binding.overlayView.setOpenFlash();
+                    binding.overlayView.setQROverlayViewCallback(new QROverlayViewCallback() {
+                        @Override
+                        public void openFlash() {
+                            if (torchState == TorchState.ON) {
+                                camera.getCameraControl().enableTorch(false);
+                                onOpenFlash = false;
+                                binding.overlayView.setFlashState(false);
+                            } else {
+                                camera.getCameraControl().enableTorch(true);
+                                onOpenFlash = true;
+                                binding.overlayView.setFlashState(true);
+                            }
                         }
-                        return null ;
                     });
                 });
 
             } catch (Exception e) {
-                getBinding().overlayView.setVisibility(View.INVISIBLE);
+                binding.overlayView.setVisibility(View.INVISIBLE);
                 onFailure(e);
             }
         }, ContextCompat.getMainExecutor(requireContext()));
@@ -158,14 +197,14 @@ public class QRScanFragment extends BaseFragment<FragmentQrScanBinding> {
     }
 
     private void onFailure(Exception exception) {
-        if (!MlKitErrorHandler.INSTANCE.isResolvableError(requireActivity(), exception)) {
+        if (!MlKitErrorHandler.isResolvableError(requireActivity(), exception)) {
             requireActivity().finish();
         }
     }
 
     private void onSuccess(Barcode result) {
         if (hapticFeedback) {
-            getBinding().overlayView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING | HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
+            binding.overlayView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING | HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
         }
         if (onPipSound) {
             new ToneGenerator(AudioManager.STREAM_MUSIC, 100).startTone(ToneGenerator.TONE_CDMA_PIP, 150);
@@ -177,12 +216,12 @@ public class QRScanFragment extends BaseFragment<FragmentQrScanBinding> {
         if (content != null) {
             if (isCardId(content)) {
                 long size = QRScanDatabase.getInstance().resultDao().getCount();
-                QRCodeResult qrCodeResult = new QRCodeResult(content, type, currentTime, false );
+                QRCodeResult qrCodeResult = new QRCodeResult(content, type, currentTime, false);
                 QRScanDatabase.getInstance().resultDao().insert(qrCodeResult);
                 QRScanDatabase.getInstance().resultDao().limitHistory();
                 ShowResultContentActivity.newInstance(requireContext(), qrCodeResult, "CARD_ID");
             } else {
-                Snackbar.make(getBinding().getRoot(), getString(R.string.txt_qr_not_equal_card_id), Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(binding.getRoot(), getString(R.string.txt_qr_not_equal_card_id), Snackbar.LENGTH_SHORT).show();
                 startCamera();
             }
         }
@@ -196,18 +235,13 @@ public class QRScanFragment extends BaseFragment<FragmentQrScanBinding> {
     }
 
     private void applyScannerConfig() {
-        getBinding().overlayView.setHorizontalFrameRatio(1f);
-    }
-
-    @Override
-    public void onFragmentResume() {
-        super.onFragmentResume();
-        getBinding().overlayView.setFlashState(false);
+        binding.overlayView.setHorizontalFrameRatio(1f);
     }
 
 
     @Override
-    public int getLayoutId() {
-        return R.layout.fragment_qr_scan;
+    public void onResume() {
+        binding.overlayView.setFlashState(false);
+        super.onResume();
     }
 }

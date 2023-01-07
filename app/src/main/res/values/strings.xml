@@ -37,4 +37,12 @@
     <string name="txt_camera_require_permission_alert">Bạn có muốn cấp quyền cho camera không?</string>
     <string name="txt_cancel_alert">Từ chối</string>
     <string name="txT_accept_alert">OK</string>
+    <string name="txt_permission_app_require">Ứng dụng cần quyền CAMERA</string>
+    <string name="txt_grant_permission_manual">Bạn cần cấp quyền thủ công trong Cài Đặt</string>
+
+    <string name="quickie_scan_qr_code">Scan QR code</string>
+    <string name="quickie_please_wait">Please wait…</string>
+    <string name="txt_cccd_qr">CCCD-QR</string>
+    <string name="txt_move_camera_alert">Di chuyển camera đến mã QR để quét </string>
+    <string name="txt_pick_qr_from_gallery">Chọn ảnh QR từ thư viện</string>
 </resources>

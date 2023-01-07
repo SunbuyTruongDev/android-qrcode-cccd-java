@@ -1,45 +1,48 @@
 package com.sunbuy.qrcardid_java;
 
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.ActivityKt;
-import androidx.navigation.NavController;
-import androidx.navigation.ui.BottomNavigationViewKt;
-import androidx.navigation.ui.NavControllerKt;
-
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import android.Manifest;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-
-import com.base.common.base.BaseActivity;
-import com.base.common.extensions.ActivityExtensionsKt;
-import com.base.common.extensions.ViewExtensionsKt;
-import com.base.common.utils.PermissionResult;
-import com.base.common.utils.UtilsKt;
+import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.permissionx.guolindev.PermissionX;
 import com.sunbuy.qrcardid_java.databinding.ActivityMainBinding;
+import com.sunbuy.qrcardid_java.fragment.HistoryFragment;
+import com.sunbuy.qrcardid_java.fragment.ImportanceFragment;
+import com.sunbuy.qrcardid_java.fragment.QRScanFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends BaseActivity<ActivityMainBinding> {
+public class MainActivity extends AppCompatActivity {
 
     private boolean doubleBackToExitPressedOnce = false ;
+    private ActivityMainBinding binding ;
 
     @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityMainBinding.inflate(getLayoutInflater()) ;
+        setContentView(binding.getRoot());
+        initViews();
+    }
+
     public void initViews() {
         requestPermission();
 
-        ViewExtensionsKt.setSingleClickListener(getBinding().btnCancelCameraPermission, view -> {
+        binding.btnCancelCameraPermission.setOnClickListener(view ->{
             System.exit(0);
-            return  null ;
         });
 
-        ViewExtensionsKt.setSingleClickListener(getBinding().btnOkCameraPermission, view -> {
+        binding.btnOkCameraPermission.setOnClickListener(view -> {
             requestPermission();
-            return null ;
         });
     }
 
@@ -47,29 +50,52 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         List<String> permission = new ArrayList<>() ;
         permission.add(Manifest.permission.CAMERA) ;
 
-        UtilsKt.requestPermission(MainActivity.this,permission , new PermissionResult() {
-            @Override
-            public void requestSuccess() {
-                ViewExtensionsKt.show(getBinding().clScan);
-                ViewExtensionsKt.hide(getBinding().clAlertPermission);
-                BottomNavigationView navView = getBinding().navMain ;
-                NavController navController = ActivityKt.findNavController(MainActivity.this,R.id.nav_host_main) ;
-                BottomNavigationViewKt.setupWithNavController(navView,navController);
-            }
+        PermissionX.init(this).permissions(permission)
+                .explainReasonBeforeRequest()
+                .onExplainRequestReason((scope, deniedList) -> {
+                    scope.showRequestReasonDialog(deniedList,getString(R.string.txt_permission_app_require),"OK","Cancel") ;
+                }).request((allGranted, grantedList, deniedList) -> {
+            if (allGranted){
+                binding.clScan.setVisibility(View.VISIBLE);
+                binding.clAlertPermission.setVisibility(View.GONE);
+                BottomNavigationView navView = binding.navMain ;
+                navView.getMenu().findItem(R.id.navigation_qrcode).setChecked(true) ;
+                replaceFragment(new QRScanFragment());
+                navView.setOnItemSelectedListener(item -> {
+                    switch (item.getItemId()){
+                        case R.id.navigation_qrcode :
+                            navView.getMenu().findItem(R.id.navigation_qrcode).setChecked(true) ;
+                            replaceFragment(new QRScanFragment());
+                            break;
+                        case R.id.navigation_history :
+                            navView.getMenu().findItem(R.id.navigation_history).setChecked(true) ;
+                            replaceFragment(new HistoryFragment());
+                            break;
+                        case R.id.navigation_favorite :
+                            navView.getMenu().findItem(R.id.navigation_favorite).setChecked(true) ;
+                            replaceFragment(new ImportanceFragment());
+                            break;
+                    }
+                    return false;
+                });
 
-            @Override
-            public void requestDenied() {
-                ViewExtensionsKt.hide(getBinding().clScan);
-                ViewExtensionsKt.show(getBinding().clAlertPermission);
+            }else {
+                binding.clScan.setVisibility(View.GONE);
+                binding.clAlertPermission.setVisibility(View.VISIBLE);
             }
         });
     }
 
     public void backToScanFragment(){
-        BottomNavigationView navView = getBinding().navMain ;
-        NavController navController = ActivityKt.findNavController(MainActivity.this,R.id.nav_host_main) ;
-        BottomNavigationViewKt.setupWithNavController(navView,navController);
-        ActivityKt.findNavController(MainActivity.this,R.id.nav_host_main).navigate(R.id.navigation_qrcode);
+        BottomNavigationView navView = binding.navMain ;
+        navView.getMenu().findItem(R.id.navigation_qrcode).setChecked(true) ;
+        replaceFragment(new QRScanFragment());
+    }
+
+    private void replaceFragment(Fragment fragment){
+        FragmentManager fragmentManager = getSupportFragmentManager() ;
+        FragmentTransaction transaction = fragmentManager.beginTransaction() ;
+        transaction.replace(R.id.nav_host_main,fragment).commit() ;
     }
 
     @Override
@@ -78,15 +104,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             System.exit(0);
         }
         doubleBackToExitPressedOnce = true ;
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            doubleBackToExitPressedOnce = false ;
-        },2000);
-        ActivityExtensionsKt.showMessage(MainActivity.this,getString(R.string.txt_double_back_to_exit));
+        new Handler(Looper.getMainLooper()).postDelayed(() -> doubleBackToExitPressedOnce = false,2000);
+        Toast.makeText(MainActivity.this,getString(R.string.txt_double_back_to_exit),Toast.LENGTH_SHORT).show();
     }
-
-    @Override
-    public int getLayoutId() {
-        return R.layout.activity_main;
-    }
-
 }

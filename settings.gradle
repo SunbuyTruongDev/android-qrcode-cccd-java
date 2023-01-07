@@ -14,5 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "QRCardId_Java"
 include ':app'
-include ':common'
-include ':scancode'

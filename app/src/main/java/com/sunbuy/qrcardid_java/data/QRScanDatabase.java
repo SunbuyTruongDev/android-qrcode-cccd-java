@@ -20,7 +20,7 @@ public abstract class QRScanDatabase extends RoomDatabase {
     public static QRScanDatabase getInstance() {
         QRScanDatabase ret = instance;
         if (ret == null) {
-            ret = Room.databaseBuilder(QRCodeApplication.Companion.getInstance(), QRScanDatabase.class, "QRScan").allowMainThreadQueries().build();
+            ret = Room.databaseBuilder(QRCodeApplication.getInstance(), QRScanDatabase.class, "QRScan").allowMainThreadQueries().build();
             instance = ret ;
         }
         return ret ;

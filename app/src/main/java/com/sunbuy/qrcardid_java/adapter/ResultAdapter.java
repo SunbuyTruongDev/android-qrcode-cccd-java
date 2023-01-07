@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.base.common.extensions.ViewExtensionsKt;
 import com.sunbuy.qrcardid_java.R;
 import com.sunbuy.qrcardid_java.data.QRScanDatabase;
 import com.sunbuy.qrcardid_java.data.entities.QRCodeResult;
@@ -117,22 +116,26 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
             holder.mBinding.imgSelect.setTag("selected");
         }
 
-        ViewExtensionsKt.setSingleClickListener(holder.mBinding.getRoot(), view -> {
-                if (holder.getBindingAdapterPosition() != RecyclerView.NO_POSITION){
-                    if (showDeleteHistory){
-                        selectItem(holder);
-                    }else {
-                        listener.onResultClick(list.get(holder.getBindingAdapterPosition()));
-                    }
+        if (showDeleteHistory){
+            holder.mBinding.imgSelect.setVisibility(View.VISIBLE);
+        }else {
+            holder.mBinding.imgSelect.setVisibility(View.GONE);
+        }
+
+        holder.mBinding.getRoot().setOnClickListener(view ->{
+            if (holder.getBindingAdapterPosition() != RecyclerView.NO_POSITION){
+                if (showDeleteHistory){
+                    selectItem(holder);
+                }else {
+                    listener.onResultClick(list.get(holder.getBindingAdapterPosition()));
                 }
-            return null;
+            }
         });
 
-        ViewExtensionsKt.setSingleClickListener(holder.mBinding.imgImportance,view -> {
+        holder.mBinding.imgImportance.setOnClickListener(view  -> {
             if (holder.getBindingAdapterPosition() != RecyclerView.NO_POSITION){
                 listener.onRemoveFavorite(list.get(holder.getBindingAdapterPosition()));
             }
-            return null;
         });
     }
 

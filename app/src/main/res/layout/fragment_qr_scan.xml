@@ -17,7 +17,7 @@
             android:layout_height="match_parent"
             />
 
-        <com.sunbuy.scancode.QROverlayView
+        <com.sunbuy.qrcardid_java.scan.QROverlayView
             android:id="@+id/overlay_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

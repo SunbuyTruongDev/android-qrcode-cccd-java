@@ -5,8 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import com.base.common.base.BaseActivity;
-import com.base.common.extensions.ViewExtensionsKt;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import com.sunbuy.qrcardid_java.data.QRScanDatabase;
 import com.sunbuy.qrcardid_java.data.entities.QRCodeResult;
 import com.sunbuy.qrcardid_java.databinding.ActivityShowResultContentBinding;
@@ -14,9 +14,10 @@ import com.sunbuy.qrcardid_java.model.CardIdResult;
 
 import java.time.LocalDate;
 
-public class ShowResultContentActivity extends BaseActivity<ActivityShowResultContentBinding> {
+public class ShowResultContentActivity extends AppCompatActivity {
 
     private CardIdResult cardIdResult ;
+    private ActivityShowResultContentBinding binding ;
 
     public static void newInstance(Context context , QRCodeResult qrCodeResult , String type){
         Bundle bundle = new Bundle() ;
@@ -28,11 +29,19 @@ public class ShowResultContentActivity extends BaseActivity<ActivityShowResultCo
     }
 
     @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityShowResultContentBinding.inflate(getLayoutInflater()) ;
+        setContentView(binding.getRoot());
+        initViews();
+
+
+    }
     public void initViews() {
         Bundle bundle = getIntent().getExtras() ;
         QRCodeResult qrResult = bundle.getParcelable("qrResult");
         if ("CARD_ID".equals(bundle.getString("type"))) {
-            getBinding().tvTitle.setText(getString(R.string.txt_card_id));
+            binding.tvTitle.setText(getString(R.string.txt_card_id));
             String[] resultArray = qrResult.getContent().split("\\|");
             String idCardNumber = resultArray[0];
             String idCardNumberOld = resultArray[1];
@@ -44,52 +53,51 @@ public class ShowResultContentActivity extends BaseActivity<ActivityShowResultCo
                 cardIdResult = new CardIdResult(idCardNumber, idCardNumberOld, personalName, gender, dateIssued, dIssued, expirationDate, address);
             });
 
-            getBinding().edtCardId.setFocusableInTouchMode(false);
-            getBinding().edtCardIdOld.setFocusableInTouchMode(false);
-            getBinding().edtFullName.setFocusableInTouchMode(false);
-            getBinding().edtGender.setFocusableInTouchMode(false);
-            getBinding().edtDateOfBirth.setFocusableInTouchMode(false);
-            getBinding().edtIssuedOn.setFocusableInTouchMode(false);
-            getBinding().edtExpirationDate.setFocusableInTouchMode(false);
-            getBinding().edtAddress.setFocusableInTouchMode(false);
-            getBinding().edtNationality.setFocusableInTouchMode(false);
+            binding.edtCardId.setFocusableInTouchMode(false);
+            binding.edtCardIdOld.setFocusableInTouchMode(false);
+            binding.edtFullName.setFocusableInTouchMode(false);
+            binding.edtGender.setFocusableInTouchMode(false);
+            binding.edtDateOfBirth.setFocusableInTouchMode(false);
+            binding.edtIssuedOn.setFocusableInTouchMode(false);
+            binding.edtExpirationDate.setFocusableInTouchMode(false);
+            binding.edtAddress.setFocusableInTouchMode(false);
+            binding.edtNationality.setFocusableInTouchMode(false);
 
-            getBinding().edtCardId.setText(cardIdResult.getIdCardNumber());
+            binding.edtCardId.setText(cardIdResult.getIdCardNumber());
             if (cardIdResult.getIdCardNumberOld().length() > 0){
-                getBinding().txtInputCardIdOld.setVisibility(View.VISIBLE);
+                binding.txtInputCardIdOld.setVisibility(View.VISIBLE);
             }else {
-                getBinding().txtInputCardIdOld.setVisibility(View.GONE);
+                binding.txtInputCardIdOld.setVisibility(View.GONE);
             }
-            getBinding().edtCardIdOld.setText(cardIdResult.getIdCardNumberOld()) ;
-            getBinding().edtFullName.setText(cardIdResult.getPersonalName()) ;
-            getBinding().edtGender.setText(cardIdResult.getGender()) ;
-            getBinding().edtDateOfBirth.setText(cardIdResult.getDateOfBirth()) ;
-            getBinding().edtIssuedOn.setText(cardIdResult.getDateIssued()) ;
-            getBinding().edtExpirationDate.setText(cardIdResult.getExpirationDate()) ;
-            getBinding().edtAddress.setText(cardIdResult.getAddress()) ;
+            binding.edtCardIdOld.setText(cardIdResult.getIdCardNumberOld()) ;
+            binding.edtFullName.setText(cardIdResult.getPersonalName()) ;
+            binding.edtGender.setText(cardIdResult.getGender()) ;
+            binding.edtDateOfBirth.setText(cardIdResult.getDateOfBirth()) ;
+            binding.edtIssuedOn.setText(cardIdResult.getDateIssued()) ;
+            binding.edtExpirationDate.setText(cardIdResult.getExpirationDate()) ;
+            binding.edtAddress.setText(cardIdResult.getAddress()) ;
 
             if (qrResult.isFavorite()){
-                getBinding().imgFavorite.setImageResource(R.drawable.ic_importance_active);
+                binding.imgFavorite.setImageResource(R.drawable.ic_importance_active);
             }else {
-                getBinding().imgFavorite.setImageResource(R.drawable.ic_importance_inactive);
+                binding.imgFavorite.setImageResource(R.drawable.ic_importance_inactive);
             }
 
-            ViewExtensionsKt.setSingleClickListener(getBinding().imgFavorite,view -> {
+            binding.imgFavorite.setOnClickListener(view -> {
                 QRCodeResult result = QRScanDatabase.getInstance().resultDao().getResult(qrResult.getId()) ;
                 if (result.isFavorite()){
                     QRScanDatabase.getInstance().resultDao().update(qrResult.getId(),0);
-                    getBinding().imgFavorite.setImageResource(R.drawable.ic_importance_inactive);
+                    binding.imgFavorite.setImageResource(R.drawable.ic_importance_inactive);
                 }else {
                     QRScanDatabase.getInstance().resultDao().update(qrResult.getId(),1);
-                    getBinding().imgFavorite.setImageResource(R.drawable.ic_importance_active);
+                    binding.imgFavorite.setImageResource(R.drawable.ic_importance_active);
                 }
-                return null ;
             });
 
-            ViewExtensionsKt.setSingleClickListener(getBinding().imgBack,view ->{
+            binding.imgBack.setOnClickListener(view-> {
                 onBackPressed();
-                return null;
             });
+
         }
     }
 
@@ -121,11 +129,6 @@ public class ShowResultContentActivity extends BaseActivity<ActivityShowResultCo
 
         callback.dateCallback(dateOfBirth, eDate);
 
-    }
-
-    @Override
-    public int getLayoutId() {
-        return R.layout.activity_show_result_content;
     }
 
     interface DataCallback{

@@ -18,15 +18,13 @@
             android:layout_height="match_parent"
             android:visibility="gone">
 
-            <fragment
+            <FrameLayout
                 android:id="@+id/nav_host_main"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 app:layout_constraintBottom_toTopOf="@+id/navMain"
                 app:layout_constraintTop_toTopOf="parent"
-                android:name="androidx.navigation.fragment.NavHostFragment"
-                app:defaultNavHost="true"
-                app:navGraph="@navigation/main_navigation" />
+                />
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/navMain"
